@@ -1,0 +1,130 @@
+Version 0.3.1   28 Jul 2015
+
+* Table scrolls to last processed file
+
+* Improvements and bugfixes with size calculation/verification
+
+Version 0.3.0   28 Jul 2015
+
+* Renamed to Mus
+
+* Specified other tooltips
+
+* Added file length to checksum files (potentially faster error detection)
+
+* Removed some retrocompatibility features, as the program is very different now
+
+Version 0.2.1	27 Jul 2015
+
+* Bugfix when checksumming files containing non-ascii chars
+
+Version 0.2.0	27 Jul 2015
+
+* New, emoji-based, graphics
+
+* Show information on numbers of OK files, errors, size.
+
+Version 0.1.0	25 Jul 2015
+
+* Ask before overwriting files
+
+* Added checksumming of the Summy file itself (involves a file format change)
+
+* Solved a bug: loading a summy file saved in Windows won't work in *nix. 
+
+* File format change: now all the backslashes are converted in slashes when saving.
+
+* File format change: The original base directory is not saved anymore
+
+* New versioning: major/minor/build
+
+Version 0.10	24 Jul 2015
+
+* Added a first version of file verification feature (in the GUI). When adding a path, if there
+  are one or more .summy files, the user will be prompted to verify them. 
+
+Version 0.9		23 Jul 2015
+
+* Row is colored in yellow if an error has occoured
+
+* Further refactoring
+
+Version 0.8		22 Jul 2015
+
+* Number of worker threads can be configured, and now defaults at NUM_CORES + 1. It is infact
+  necessary to set 1 worker thread when dealing with optical media and possibly HDD, as the file
+  seeks are really slow and it's important to read sequencially 1 file per time.
+  
+* In CLI mode, worker threads are always 1 (for now) 
+
+* Added a proper toolbar (simple buttons were rather ugly)
+
+* Added status icons to file tables (as first column)
+
+* Usual refactorings
+
+Version 0.7		19 Jul 2015
+
+* Added buttons with icons
+
+* Added a button to save checksum file directly to automatical location
+
+* Added confirmation dialog after saving file
+
+Version 0.6		18 Jul 2015
+
+* CLI mode: print progress on the same line over and over
+
+* Display usage if running without arguments in an headless environment
+
+Version 0.5		18 Jul 2015
+
+* Added indication of speed, ETA and time elapsed
+
+* CLI mode: -a switch to auto-name the checksum file to save
+
+* CLI mode: now it's possible to specify more than one dir/file to checksum
+
+* Bugfix: Application in CLI mode won't exit when finished
+
+* Bugfix: Using paths relative to current directory provoked a NullPointerException
+
+* Refactoring to class structure and code style fixes
+
+Version 0.4		18 Jul 2015
+
+* Refinements to the routine that decides the checksum file name
+
+* Bugfix to checksum file saving
+
+* Fix to form layout
+
+* Added status indicators when building tree and calculating checksums
+
+* Refactoring to event-based "file walker"
+
+Version 0.3		18 Jul 2015
+
+* Drag'n'drop support
+
+* Base directory reported in the checksum file
+
+* Better behaviour of the file selection dialogs (remember position, etc)
+
+* Overall cleanup, speed, bugfixes
+
+Version 0.2		15 Jul 2015
+
+* Progress bar indicates the real progress (bytes processed), not the files
+
+* Retuned number of threads to cores * 1.5 
+
+* Window title shows the number of threads used
+
+* Better separation of CLI and GFX interfaces
+
+* Build script
+
+Version 0.1		14 Jul 2015
+
+* First version
