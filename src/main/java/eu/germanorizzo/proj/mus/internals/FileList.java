@@ -16,6 +16,7 @@
  */
 package eu.germanorizzo.proj.mus.internals;
 
+import eu.germanorizzo.proj.mus.Mus;
 import eu.germanorizzo.proj.mus.utils.MiscUtils;
 
 import java.io.ByteArrayInputStream;
@@ -31,6 +32,7 @@ import java.util.Objects;
 import java.util.function.IntConsumer;
 
 public class FileList {
+    private static final String FIRST_LINE = "# File created with %s <https://github.com/proofrock/Mus>";
     public static final String LAST_LINE_SUFFIX = "\tThis file";
 
     public static final String EXTENSION = "mu5";
@@ -95,10 +97,12 @@ public class FileList {
 
     public void writeToFile(OutputStream os) throws IOException {
         /* File format:
+         * # disclaimer line
          * Checksum<TAB>File path
          * Mus file checksum<TAB>Fixed string ("This file")
          */
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(String.format(FIRST_LINE, Mus.HEADER_STRING));
+        sb.append(MiscUtils.CRLF);
         for (int i = 0; i < list.size(); i++) {
             Info info = getFileInfo(i);
             if (info.state == State.OK)
