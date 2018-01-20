@@ -24,11 +24,12 @@ public class Walker {
     private final AtomicInteger filesOk = new AtomicInteger();
     private final AtomicInteger filesKo = new AtomicInteger();
     private final FileList fileList = new FileList();
-    public Runnable onBuilding;
-    public Consumer<Status> onCalculating, onFinished;
-    public Consumer<Exception> onError;
+    private Runnable onBuilding;
+    private Consumer<Status> onCalculating, onFinished;
+    private Consumer<Exception> onError;
     private long startOfComputation, endOfComputation;
     private volatile State state;
+
     private Walker(String[] files, String[] checksums) {
         this.checksums = checksums;
         this.files = files;
@@ -39,9 +40,9 @@ public class Walker {
         return new Walker(files, null);
     }
 
-    public static Walker forChecksums(String... checksums) {
-        return new Walker(null, checksums);
-    }
+    //public static Walker forChecksums(String... checksums) {
+    //    return new Walker(null, checksums);
+    //}
 
     public static Walker forChecksums(List<String> checksums) {
         return new Walker(null, checksums.toArray(new String[checksums.size()]));
@@ -53,16 +54,14 @@ public class Walker {
             Path f = Paths.get(fileName).toAbsolutePath();
             if (Files.isDirectory(f)) {
                 try {
-                    Files.walkFileTree(f, new SimpleFileVisitor<Path>() {
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                                throws IOException {
+                    Files.walkFileTree(f, new SimpleFileVisitor<>() {
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                             if (file.toString().endsWith("." + FileList.EXTENSION))
                                 checksums.add(file.toString());
                             return FileVisitResult.CONTINUE;
                         }
                     });
-                } catch (IOException e) {
-                    continue;
+                } catch (IOException ignored) {
                 }
             } else {
                 if (f.toString().endsWith("." + FileList.EXTENSION))
@@ -126,8 +125,7 @@ public class Walker {
             for (int i = 0; i < fileList.size(); i++) {
                 final int idx = i;
                 threadPool.execute(() -> {
-                    boolean ok = fileList.calcChecksum(idx,
-                            (bytes) -> sizeProcessed.addAndGet(bytes));
+                    boolean ok = fileList.calcChecksum(idx, sizeProcessed::addAndGet);
                     semaphore.release();
                     (ok ? filesOk : filesKo).incrementAndGet();
                 });
@@ -135,7 +133,7 @@ public class Walker {
 
             try {
                 semaphore.acquire(fileList.size());
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
             }
 
             threadPool.shutdown();
@@ -155,7 +153,7 @@ public class Walker {
             Path f = Paths.get(fileName).toAbsolutePath();
             if (Files.isDirectory(f)) {
                 fileList.addPath(f);
-                Files.walkFileTree(f, new SimpleFileVisitor<Path>() {
+                Files.walkFileTree(f, new SimpleFileVisitor<>() {
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                             throws IOException {
                         addFile(file);
@@ -167,7 +165,7 @@ public class Walker {
         }
     }
 
-    public void addFile(Path file) throws IOException {
+    private void addFile(Path file) throws IOException {
         Info info = fileList.addPath(file);
         long size = Files.size(file);
         totalSize.addAndGet(size);
@@ -195,13 +193,15 @@ public class Walker {
     }
 
     private void loadChecksumTree(File checksum)
-            throws IOException, FileNotFoundException, ChecksumVerificationFailedException {
+            throws IOException, ChecksumVerificationFailedException {
         //try to load checksum part (if it's there)
         byte[] contents;
         try (InputStream is = new FileInputStream(checksum)) {
             contents = new byte[(int) (checksum.length() - 42)];
+            //noinspection ResultOfMethodCallIgnored
             is.read(contents);
             byte[] candidate = new byte[42];
+            //noinspection ResultOfMethodCallIgnored
             is.read(candidate);
             String scandidate = new String(candidate);
             if (!scandidate.endsWith(FileList.LAST_LINE_SUFFIX)) {
@@ -226,7 +226,7 @@ public class Walker {
 
         try (Reader r = new StringReader(new String(contents, MiscUtils.UTF8));
              BufferedReader br = new BufferedReader(r)) {
-            String line = null;
+            String line;
             while ((line = br.readLine()) != null) {
                 // non-checksum lines are ignored
                 if (MiscUtils.countChars(line, MiscUtils.TAB) != 2)
@@ -259,8 +259,8 @@ public class Walker {
         return fileList;
     }
 
-    public static enum State {
-        NEW, BUILDING, CALCULATING, FINISHED;
+    public enum State {
+        NEW, BUILDING, CALCULATING, FINISHED
     }
 
     public class Status {
@@ -270,7 +270,7 @@ public class Walker {
         public final long totSize, bytesPerSecond;
         public final int secondsRemaining;
 
-        protected Status() {
+        Status() {
             state = Walker.this.state;
             switch (state) {
                 case BUILDING:

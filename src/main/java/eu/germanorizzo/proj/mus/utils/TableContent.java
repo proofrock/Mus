@@ -81,16 +81,16 @@ public class TableContent extends DefaultTableCellRenderer implements TableModel
         return ret;
     }
 
-    public static interface Row {
-        public Color getColor();
+    public interface Row {
+        Color getColor();
 
-        public Object getValue(int colNum);
+        Object getValue(int colNum);
     }
 
     public static class Column {
-        public final Class<?> clas;
-        public final String title;
-        public final int width;
+        final Class<?> clas;
+        final String title;
+        final int width;
 
         public Column(Class<?> clas, String title, int width) {
             this.clas = clas;
@@ -103,27 +103,23 @@ public class TableContent extends DefaultTableCellRenderer implements TableModel
         }
     }
 
-    public static class RowBean implements Row {
-        private final Color color;
-        private final Object[] columns;
-
-        public RowBean(Color color, Object... columns) {
-            this.color = color;
-            this.columns = columns;
-        }
-
-        public RowBean(Object... columns) {
-            this(Color.WHITE, columns);
-        }
-
-        public Color getColor() {
-            return color;
-        }
-
-        public Object getValue(int colNum) {
-            return columns[colNum];
-        }
-    }
+    //public static class RowBean implements Row {
+    //    private final Color color;
+    //    private final Object[] columns;
+    //    public RowBean(Color color, Object... columns) {
+    //        this.color = color;
+    //        this.columns = columns;
+    //    }
+    //    public RowBean(Object... columns) {
+    //        this(Color.WHITE, columns);
+    //    }
+    //    public Color getColor() {
+    //        return color;
+    //    }
+    //    public Object getValue(int colNum) {
+    //        return columns[colNum];
+    //    }
+    //}
 
     public static class RowCalc implements Row {
         private static final Object[] NO_ARR = new Object[0];

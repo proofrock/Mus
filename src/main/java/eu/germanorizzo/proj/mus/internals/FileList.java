@@ -41,12 +41,12 @@ public class FileList {
         return list.size();
     }
 
-    public void clear() {
-        list.clear();
-        commonAncestor = null;
-    }
+    //public void clear() {
+    //    list.clear();
+    //    commonAncestor = null;
+    //}
 
-    public String getRelativePath(int index) {
+    private String getRelativePath(int index) {
         return commonAncestor.relativize(list.get(index).path).toString();
     }
 
@@ -92,7 +92,7 @@ public class FileList {
             sb.append(MiscUtils.TAB);
             sb.append(info.size);
             sb.append(MiscUtils.TAB);
-            String fn = getRelativePath(i).toString();
+            String fn = getRelativePath(i);
             fn = fn.replace('\\', '/');
             sb.append(fn);
             sb.append(MiscUtils.CRLF);
@@ -155,7 +155,7 @@ public class FileList {
         return true;
     }
 
-    public static enum State {
+    public enum State {
         NULL, WORKING, OK, ERR
     }
 
@@ -165,7 +165,7 @@ public class FileList {
         public volatile String checksum, error;
         public volatile long size = -1;
 
-        protected Info(Path path) {
+        Info(Path path) {
             this.path = path;
         }
 

@@ -2,7 +2,6 @@ package eu.germanorizzo.proj.mus.utils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 
 public class GUIUtils {
     private GUIUtils() {
@@ -22,13 +21,13 @@ public class GUIUtils {
         JOptionPane.showMessageDialog(parent, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    public static void reportError(Component parent, String error) {
-        JOptionPane.showMessageDialog(parent, error, "Error", JOptionPane.ERROR_MESSAGE);
-    }
+    //public static void reportError(Component parent, String error) {
+    //    JOptionPane.showMessageDialog(parent, error, "Error", JOptionPane.ERROR_MESSAGE);
+    //}
 
-    public static void reportWarning(Component parent, String warning) {
-        JOptionPane.showMessageDialog(parent, warning, "Warning", JOptionPane.WARNING_MESSAGE);
-    }
+    //public static void reportWarning(Component parent, String warning) {
+    //    JOptionPane.showMessageDialog(parent, warning, "Warning", JOptionPane.WARNING_MESSAGE);
+    //}
 
     public static void reportInfo(Component parent, String info) {
         JOptionPane.showMessageDialog(parent, info, "Information", JOptionPane.INFORMATION_MESSAGE);
@@ -42,71 +41,71 @@ public class GUIUtils {
     public static void useNativeLF() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
-    public static void fullScreen(JFrame frame) {
-        frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-    }
+    //public static void fullScreen(JFrame frame) {
+    //    frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+    //}
 
-    public static String askText(Window parent, String message) {
-        return askText(parent, message, "");
-    }
+    //public static String askText(Window parent, String message) {
+    //    return askText(parent, message, "");
+    //}
 
-    public static String askText(Window parent, String message, String preset) {
-        return (String) JOptionPane.showInputDialog(parent, message, "Input request",
-                JOptionPane.QUESTION_MESSAGE, null, null, preset);
-    }
+    //public static String askText(Window parent, String message, String preset) {
+    //    return (String) JOptionPane.showInputDialog(parent, message, "Input request",
+    //            JOptionPane.QUESTION_MESSAGE, null, null, preset);
+    //}
 
-    public static File selFileForLoad(Window parent, String title) {
-        return selFileForLoad(parent, title, null);
-    }
+    //public static File selFileForLoad(Window parent, String title) {
+    //    return selFileForLoad(parent, title, null);
+    //}
 
-    public static File selFileForSave(Window parent, String title) {
-        return selFileForSave(parent, title, null);
-    }
+    //public static File selFileForSave(Window parent, String title) {
+    //    return selFileForSave(parent, title, null);
+    //}
 
-    public static File selFileForLoad(Window parent, String title, String fileName) {
-        return selFile(parent, title, fileName, FileDialog.LOAD);
-    }
+    //public static File selFileForLoad(Window parent, String title, String fileName) {
+    //    return selFile(parent, title, fileName, FileDialog.LOAD);
+    //}
 
-    public static File selFileForSave(Window parent, String title, String fileName) {
-        return selFile(parent, title, fileName, FileDialog.SAVE);
-    }
+    //public static File selFileForSave(Window parent, String title, String fileName) {
+    //    return selFile(parent, title, fileName, FileDialog.SAVE);
+    //}
 
-    private static File selFile(Window parent, String title, String fileName, int operation) {
-        FileDialog fd;
-        if (parent instanceof Dialog)
-            fd = new FileDialog((Dialog) parent, title, operation);
-        else if (parent instanceof Frame)
-            fd = new FileDialog((Frame) parent, title, operation);
-        else
-            throw new UnsupportedOperationException(
-                    "The parent must be either a frame or a dialog");
+    //private static File selFile(Window parent, String title, String fileName, int operation) {
+    //    FileDialog fd;
+    //    if (parent instanceof Dialog)
+    //        fd = new FileDialog((Dialog) parent, title, operation);
+    //    else if (parent instanceof Frame)
+    //        fd = new FileDialog((Frame) parent, title, operation);
+    //    else
+    //        throw new UnsupportedOperationException(
+    //                "The parent must be either a frame or a dialog");
+//
+    //    if (fileName != null)
+    //        fd.setFile(fileName);
+//
+    //    fd.setVisible(true);
+    //    if (fd.getFile() == null)
+    //        return null;
+    //    return new File(fd.getDirectory(), fd.getFile());
+    //}
 
-        if (fileName != null)
-            fd.setFile(fileName);
+    //public static File selDirectory(Window parent) {
+    //    JFileChooser jfc = new JFileChooser();
+    //    jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    //    if (jfc.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION)
+    //        return null;
+    //    return jfc.getSelectedFile();
+    //}
 
-        fd.setVisible(true);
-        if (fd.getFile() == null)
-            return null;
-        return new File(fd.getDirectory(), fd.getFile());
-    }
-
-    public static File selDirectory(Window parent) {
-        JFileChooser jfc = new JFileChooser();
-        jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        if (jfc.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION)
-            return null;
-        return jfc.getSelectedFile();
-    }
-
-    public static void bringToFront(Window w) {
-        boolean isAOT = w.isAlwaysOnTop();
-        w.setAlwaysOnTop(true);
-        w.setAlwaysOnTop(isAOT);
-    }
+    //public static void bringToFront(Window w) {
+    //    boolean isAOT = w.isAlwaysOnTop();
+    //    w.setAlwaysOnTop(true);
+    //    w.setAlwaysOnTop(isAOT);
+    //}
 
     public static void updUI(JComponent... components) {
         for (JComponent component : components)

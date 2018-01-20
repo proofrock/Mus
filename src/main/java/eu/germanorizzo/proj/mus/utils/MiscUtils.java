@@ -13,22 +13,23 @@ public class MiscUtils {
     public static final String CRLF = "\r\n";
     public static final char TAB = '\t';
     private static final char[] HEX_CHARS = "0123456789ABCDEF".toCharArray();
-    private static final String FMT_FLOAT_FOR_SIZE = "%.1f";
+    private static final String FMT_FLOAT_FOR_SIZE = "%.1f %s";
     private static final float KB = 1 << 10;
     private static final float MB = 1 << 20;
     private static final float GB = 1 << 30;
     private static final int BUF_SIZE = 65536;
+
     private MiscUtils() {
     }
 
     public static void sleep(int howMuch) {
         try {
             Thread.sleep(howMuch);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
-    public static String bytes2MD5(byte[] bytes) {
+    private static String bytes2MD5(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append(HEX_CHARS[(b >> 4) & 15]);
@@ -53,10 +54,10 @@ public class MiscUtils {
         if (bps < KB)
             return bps + " Bps";
         if (bps < MB)
-            return String.format(FMT_FLOAT_FOR_SIZE, Float.valueOf(bps / KB)) + " KBps";
+            return String.format(FMT_FLOAT_FOR_SIZE, bps / KB, "KBps");
         if (bps < GB)
-            return String.format(FMT_FLOAT_FOR_SIZE, Float.valueOf(bps / MB)) + " MBps";
-        return String.format(FMT_FLOAT_FOR_SIZE, Float.valueOf(bps / GB)) + " GBps";
+            return String.format(FMT_FLOAT_FOR_SIZE, bps / MB, "MBps");
+        return String.format(FMT_FLOAT_FOR_SIZE, bps / GB, "GBps");
     }
 
     public static String formatSize(long bytes) {
@@ -65,10 +66,10 @@ public class MiscUtils {
         if (bytes < KB)
             return bytes + " bytes";
         if (bytes < MB)
-            return String.format(FMT_FLOAT_FOR_SIZE, Float.valueOf(bytes / KB)) + " Kb";
+            return String.format(FMT_FLOAT_FOR_SIZE, bytes / KB, "Kb");
         if (bytes < GB)
-            return String.format(FMT_FLOAT_FOR_SIZE, Float.valueOf(bytes / MB)) + " Mb";
-        return String.format(FMT_FLOAT_FOR_SIZE, Float.valueOf(bytes / GB)) + " Gb";
+            return String.format(FMT_FLOAT_FOR_SIZE, bytes / MB, "Mb");
+        return String.format(FMT_FLOAT_FOR_SIZE, bytes / GB, "Gb");
     }
 
     public static String computeMD5Checksum(InputStream is, IntConsumer onAdvancement)

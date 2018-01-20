@@ -4,9 +4,9 @@ import eu.germanorizzo.proj.mus.gfx.MainWindow;
 import eu.germanorizzo.proj.mus.internals.FileList;
 import eu.germanorizzo.proj.mus.internals.Walker;
 import eu.germanorizzo.proj.mus.internals.Walker.Status;
+import eu.germanorizzo.proj.mus.utils.GUIUtils;
 import eu.germanorizzo.proj.mus.utils.MiscUtils;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,11 +14,11 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 public class Mus {
-    public static final String VERSION = "0.3.1";
+    private static final String VERSION = "0.3.1";
     public static final String HEADER_STRING = "Mus " + VERSION;
     private static final int CLI_REFRESH_TIMEOUT = 500;
 
-    public static void doHeadless(String... args) {
+    private static void doHeadless(String... args) {
         boolean doAutoFileName = args[0].equals("-a");
 
         String[] files;
@@ -36,11 +36,10 @@ public class Mus {
 
         final Walker walker = Walker.forFiles(files);
 
-        walker.setOnBuilding(() -> {
-            System.out.print("Building file tree... ");
-        });
+        walker.setOnBuilding(() -> System.out.print("Building file tree... "));
 
         final Thread updater = new Thread(() -> {
+            //noinspection InfiniteLoopStatement
             while (true) {
                 MiscUtils.sleep(CLI_REFRESH_TIMEOUT);
                 outLine(walker.getStatus());
@@ -79,9 +78,7 @@ public class Mus {
             System.exit(0);
         });
 
-        walker.setOnError((e) -> {
-            handleException(e);
-        });
+        walker.setOnError(Mus::handleException);
 
         new Thread(() -> walker.work(1)).start();
     }
@@ -108,10 +105,7 @@ public class Mus {
     }
 
     private static void doGUI() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-        }
+        GUIUtils.useNativeLF();
 
         EventQueue.invokeLater(() -> {
             try {
