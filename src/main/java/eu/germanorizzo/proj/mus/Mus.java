@@ -30,7 +30,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 public class Mus {
-    private static final String VERSION = "0.3.1";
+    private static final String VERSION = "0.3.2";
     public static final String HEADER_STRING = "Mus " + VERSION;
     private static final int CLI_REFRESH_TIMEOUT = 500;
 
