@@ -50,8 +50,8 @@ or let Mus to decide it:
 Either way, it will show a progress indication and do its thing. Example under Windows:
 
 ```
-C:\Users\GermanoR>java -jar mus-1.0.0.jar -a C:\TEMP\BASE
-Mus 1.0.0
+C:\Users\GermanoR>java -jar mus-1.1.0.jar -a C:\TEMP\BASE
+Mus 1.1.0
 
 Building file tree... Ok.
 Checksumming...

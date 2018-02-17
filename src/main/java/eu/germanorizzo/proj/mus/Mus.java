@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Mus {
-    private static final String VERSION = "1.0.0";
+    private static final String VERSION = "1.1.0";
     public static final String HEADER_STRING = "Mus " + VERSION;
     private static final int CLI_REFRESH_TIMEOUT = 500;
 
