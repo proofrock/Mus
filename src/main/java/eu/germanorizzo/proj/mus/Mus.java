@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.List;
 
 public class Mus {
     private static final String VERSION = "1.0.0";
@@ -35,7 +36,16 @@ public class Mus {
     private static final int CLI_REFRESH_TIMEOUT = 500;
 
     private static void doHeadless(String... args) {
+        System.out.println(HEADER_STRING);
+        System.out.println();
+
         boolean doAutoFileName = args[0].equals("-a");
+        boolean doVerify = args[0].equals("-v");
+
+        if (doVerify) {
+            doHeadlessVerification(Arrays.copyOfRange(args, 1, args.length));
+            return;
+        }
 
         String[] files;
         final File checksumFileName;
@@ -46,9 +56,6 @@ public class Mus {
             files = Arrays.copyOfRange(args, 0, args.length - 1);
             checksumFileName = new File(args[args.length - 1]);
         }
-
-        System.out.println(HEADER_STRING);
-        System.out.println();
 
         final Walker walker = Walker.forFiles(files);
 
@@ -99,6 +106,64 @@ public class Mus {
         new Thread(() -> walker.work(1)).start();
     }
 
+    private static void doHeadlessVerification(String[] files) {
+        List<String> checksums = Walker.areThereChecksumFiles(files);
+        if (checksums.isEmpty())
+            handleException(new Exception("No checksum files detected"));
+
+        final Walker walker = Walker.forChecksums(checksums);
+
+        walker.setOnBuilding(() -> System.out.print("Building file tree... "));
+
+        final Thread updater = new Thread(() -> {
+            //noinspection InfiniteLoopStatement
+            while (true) {
+                MiscUtils.sleep(CLI_REFRESH_TIMEOUT);
+                outLine(walker.getStatus());
+            }
+        });
+        updater.setDaemon(true);
+
+        walker.setOnCalculating((s) -> {
+            System.out.println("Ok.");
+            System.out.println("Checksumming...");
+            updater.start();
+        });
+
+        walker.setOnFinished((s) -> {
+            System.out.print("Finished.  Speed: ");
+            System.out.print(MiscUtils.formatSpeed(s.bytesPerSecond));
+            System.out.print("  Time: ");
+            System.out.print(MiscUtils.formatTime(s.secondsRemaining));
+            System.out.println("                    ");
+
+            boolean ok = true;
+            if (s.filesKo != null && !s.filesKo.isEmpty()) {
+                ok = false;
+                System.out.println();
+                System.out.println(s.filesKo.size() + " files corrupted:");
+                for (String f : s.filesKo)
+                    System.out.println(f);
+            }
+            if (s.filesMissing != null && !s.filesMissing.isEmpty()) {
+                ok = false;
+                System.out.println();
+                System.out.println(s.filesMissing.size() + " files missing:");
+                for (String f : s.filesMissing)
+                    System.out.println(f);
+            }
+
+            System.out.println();
+            System.out.println(ok ? "Ok." : "Some errors occurred");
+            System.out.println("All done.");
+            System.exit(0);
+        });
+
+        walker.setOnError(Mus::handleException);
+
+        new Thread(() -> walker.work(1)).start();
+    }
+
     private static void handleException(Exception e) {
         System.out.println();
         System.out.println("Error: " + e.getMessage());
@@ -139,9 +204,10 @@ public class Mus {
     private static void showUsageAndAbort() {
         System.out.println(HEADER_STRING);
         System.err.println();
-        System.err.println("Commandline usage: java -jar Mus.jar [-a] <files...> [checksum file]");
+        System.err.println("Commandline usage: java -jar Mus.jar [-v] [-a] <files...> [checksum file]");
         System.err.println();
         System.err.println("Options:");
+        System.err.println("      -v: verify one or more checksum file(s)");
         System.err.println("      -a: determine automatically checksum file name");
         System.err.println();
         System.exit(-1);

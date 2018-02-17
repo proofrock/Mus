@@ -37,7 +37,7 @@ See the yellow bit, near the bottom? That's it! Your files are still OK! :-D
 
 # How does it work? (CLI)
 
-From the commandline, it's possible to calculate checksums, but not to verify them (yet).
+From the commandline, it's possible to calculate checksums and to verify them.
 
 To calculate a checksum, either you specify the name/path of the ```.mu5``` file...
 
@@ -59,3 +59,5 @@ Finished.  Speed: --  Time: 0 s
 Writing file C:\TEMP\BASE.mu5... Ok.
 All done.
 ```
+
+To verify a checksum, use the ```-v``` switch and specify a ```.mu5``` file or a directory to recurse into.

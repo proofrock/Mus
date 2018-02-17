@@ -23,10 +23,9 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -38,7 +37,8 @@ public class Walker {
     private final AtomicLong totalSize = new AtomicLong();
     private final AtomicLong sizeProcessed = new AtomicLong();
     private final AtomicInteger filesOk = new AtomicInteger();
-    private final AtomicInteger filesKo = new AtomicInteger();
+    private final ConcurrentMap<String, String> filesKo = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, String> filesMissing = new ConcurrentHashMap<>();
     private final FileList fileList = new FileList();
     private Runnable onBuilding;
     private Consumer<Status> onCalculating, onFinished;
@@ -141,9 +141,19 @@ public class Walker {
             for (int i = 0; i < fileList.size(); i++) {
                 final int idx = i;
                 threadPool.execute(() -> {
-                    boolean ok = fileList.calcChecksum(idx, sizeProcessed::addAndGet);
+                    FileList.CheckStatus ok = fileList.calcChecksum(idx, sizeProcessed::addAndGet);
                     semaphore.release();
-                    (ok ? filesOk : filesKo).incrementAndGet();
+                    switch (ok) {
+                        case OK:
+                            filesOk.incrementAndGet();
+                            break;
+                        case KO:
+                            filesKo.put(fileList.getFileInfo(idx).path.toString(), "");
+                            break;
+                        case MISSING:
+                            filesMissing.put(fileList.getFileInfo(idx).path.toString(), "");
+                            break;
+                    }
                 });
             }
 
@@ -285,6 +295,7 @@ public class Walker {
         public final int percentageOn10k;
         public final long totSize, bytesPerSecond;
         public final int secondsRemaining;
+        public final List<String> filesKo, filesMissing;
 
         Status() {
             state = Walker.this.state;
@@ -297,13 +308,15 @@ public class Walker {
                     percentageOn10k = 0;
                     bytesPerSecond = 0;
                     secondsRemaining = 0;
+                    filesKo = null;
+                    filesMissing = null;
                     break;
 
                 case CALCULATING:
                     totFiles = Walker.this.fileList.size();
                     totSize = totalSize.get();
                     doneFilesOk = Walker.this.filesOk.get();
-                    doneFilesKo = Walker.this.filesKo.get();
+                    doneFilesKo = Walker.this.filesKo.size() + Walker.this.filesMissing.size();
                     percentageOn10k = (Walker.this.totalSize.get() == 0) ? 0
                             : (int) (Walker.this.sizeProcessed.get() * 10000
                             / Walker.this.totalSize.get());
@@ -313,18 +326,24 @@ public class Walker {
                     secondsRemaining = (bytesPerSecond == 0) ? -1
                             : (int) ((Walker.this.totalSize.get() - Walker.this.sizeProcessed.get())
                             / bytesPerSecond);
+                    filesKo = null;
+                    filesMissing = null;
                     break;
 
                 case FINISHED:
                     totFiles = Walker.this.fileList.size();
                     totSize = totalSize.get();
                     doneFilesOk = Walker.this.filesOk.get();
-                    doneFilesKo = Walker.this.filesKo.get();
                     percentageOn10k = 10000;
                     bytesPerSecond = ((endOfComputation - startOfComputation) / 1000) == 0 ? -1
                             : Walker.this.sizeProcessed.get()
                             / ((endOfComputation - startOfComputation) / 1000);
                     secondsRemaining = (int) ((endOfComputation - startOfComputation) / 1000);
+                    filesKo = new ArrayList<>(Walker.this.filesKo.keySet());
+                    Collections.sort(filesKo);
+                    filesMissing = new ArrayList<>(Walker.this.filesMissing.keySet());
+                    Collections.sort(filesMissing);
+                    doneFilesKo = filesKo.size() + filesMissing.size();
                     break;
 
                 case NEW:
@@ -336,6 +355,8 @@ public class Walker {
                     percentageOn10k = 0;
                     bytesPerSecond = 0;
                     secondsRemaining = 0;
+                    filesKo = null;
+                    filesMissing = null;
             }
         }
     }

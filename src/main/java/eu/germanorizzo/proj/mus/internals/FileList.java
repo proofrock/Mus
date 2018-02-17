@@ -58,14 +58,14 @@ public class FileList {
         return list.size();
     }
 
+    private String getRelativePath(int index) {
+        return commonAncestor.relativize(list.get(index).path).toString();
+    }
+
     //public void clear() {
     //    list.clear();
     //    commonAncestor = null;
     //}
-
-    private String getRelativePath(int index) {
-        return commonAncestor.relativize(list.get(index).path).toString();
-    }
 
     public Info getFileInfo(int index) {
         return list.get(index);
@@ -126,11 +126,11 @@ public class FileList {
         os.write(LAST_LINE_SUFFIX.getBytes(MiscUtils.UTF8));
     }
 
-    public boolean calcChecksum(int idx, IntConsumer onAdvancement) {
+    public CheckStatus calcChecksum(int idx, IntConsumer onAdvancement) {
         Info i = list.get(idx);
 
         if (i.state == FileList.State.ERR)
-            return false;
+            return CheckStatus.KO;
 
         i.state = State.WORKING;
         i.error = null;
@@ -138,7 +138,7 @@ public class FileList {
         if (!Files.exists(i.path)) {
             i.state = FileList.State.ERR;
             i.error = "File doesn't exist anymore";
-            return false;
+            return CheckStatus.MISSING;
         }
 
         boolean isVerification = i.checksum != null;
@@ -147,7 +147,7 @@ public class FileList {
             if (isVerification && (Files.size(i.path) != i.size)) {
                 i.state = State.ERR;
                 i.error = "File size mismatch";
-                return false;
+                return CheckStatus.KO;
             }
 
             String checksum;
@@ -160,7 +160,7 @@ public class FileList {
             else if (!checksum.equals(i.checksum)) {
                 i.state = State.ERR;
                 i.error = "Corrupted file! (" + checksum + " instead of " + i.checksum + ")";
-                return false;
+                return CheckStatus.KO;
             }
 
             i.state = State.OK;
@@ -168,11 +168,13 @@ public class FileList {
         } catch (Exception e) {
             i.error = "ERROR [" + e.getClass().getName() + "]: " + e.getMessage();
             i.state = State.ERR;
-            return false;
+            return CheckStatus.KO;
         }
 
-        return true;
+        return CheckStatus.OK;
     }
+
+    public enum CheckStatus {OK, MISSING, KO}
 
     public enum State {
         NULL, WORKING, OK, ERR
