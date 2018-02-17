@@ -32,10 +32,9 @@ import java.util.Objects;
 import java.util.function.IntConsumer;
 
 public class FileList {
-    private static final String FIRST_LINE = "# File created with %s <https://github.com/proofrock/Mus>";
     public static final String LAST_LINE_SUFFIX = "\tThis file";
-
     public static final String EXTENSION = "mu5";
+    private static final String FIRST_LINE = "# File created with %s <https://github.com/proofrock/Mus>";
     private final List<Info> list = Collections.synchronizedList(new ArrayList<>());
     private Path commonAncestor;
 
