@@ -16,6 +16,7 @@
  */
 package eu.germanorizzo.proj.mus.internals;
 
+import eu.germanorizzo.proj.mus.Mus;
 import eu.germanorizzo.proj.mus.internals.FileList.Info;
 import eu.germanorizzo.proj.mus.utils.MiscUtils;
 
@@ -23,6 +24,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
@@ -33,6 +35,7 @@ import java.util.function.Consumer;
 public class Walker {
     private final String[] files;
     private final String[] checksums;
+    private int format;
     private final Semaphore semaphore = new Semaphore(0);
     private final AtomicLong totalSize = new AtomicLong();
     private final AtomicLong sizeProcessed = new AtomicLong();
@@ -46,14 +49,15 @@ public class Walker {
     private long startOfComputation, endOfComputation;
     private volatile State state;
 
-    private Walker(String[] files, String[] checksums) {
+    private Walker(String[] files, String[] checksums, int format) {
         this.checksums = checksums;
         this.files = files;
+        this.format = format;
         this.state = State.NEW;
     }
 
-    public static Walker forFiles(String... files) {
-        return new Walker(files, null);
+    public static Walker forFiles(int format, String... files) {
+        return new Walker(files, null, format);
     }
 
     //public static Walker forChecksums(String... checksums) {
@@ -61,7 +65,7 @@ public class Walker {
     //}
 
     public static Walker forChecksums(List<String> checksums) {
-        return new Walker(null, checksums.toArray(new String[checksums.size()]));
+        return new Walker(null, checksums.toArray(new String[checksums.size()]), -1);
     }
 
     public static List<String> areThereChecksumFiles(String[] files) {
@@ -116,7 +120,7 @@ public class Walker {
                 buildTree();
             else
                 try {
-                    loadChecksumTree();
+                    format = loadChecksumTree();
                 } catch (ChecksumVerificationFailedException cke) {
                     String error = "One or more Mus files didn't pass integrity check:"
                             + MiscUtils.CRLF + MiscUtils.CRLF + cke.getMessage();
@@ -141,7 +145,7 @@ public class Walker {
             for (int i = 0; i < fileList.size(); i++) {
                 final int idx = i;
                 threadPool.execute(() -> {
-                    FileList.CheckStatus ok = fileList.calcChecksum(idx, sizeProcessed::addAndGet);
+                    FileList.CheckStatus ok = fileList.calcChecksum(format, idx, sizeProcessed::addAndGet);
                     semaphore.release();
                     switch (ok) {
                         case OK:
@@ -198,11 +202,12 @@ public class Walker {
         info.size = size;
     }
 
-    private void loadChecksumTree() throws IOException, ChecksumVerificationFailedException {
+    private int loadChecksumTree() throws IOException, ChecksumVerificationFailedException {
         List<String> errors = new ArrayList<>();
+        int format = 0;
         for (String fn : checksums)
             try {
-                loadChecksumTree(new File(fn));
+                format = loadChecksumTree(new File(fn));
             } catch (ChecksumVerificationFailedException e) {
                 errors.add(e.getMessage());
             }
@@ -216,17 +221,22 @@ public class Walker {
             }
             throw new ChecksumVerificationFailedException(sb.toString());
         }
+
+        return format;
     }
 
-    private void loadChecksumTree(File checksum)
+    /* returns the format */
+    private int loadChecksumTree(File checksum)
             throws IOException, ChecksumVerificationFailedException {
+        int lastLineLen = MiscUtils.getLastLineOfFile(checksum).length();
+        int format = Arrays.binarySearch(Mus.ALGO_LEN_BY_FORMAT, lastLineLen - FileList.LAST_LINE_SUFFIX.length());
         //try to load checksum part (if it's there)
         byte[] contents;
         try (InputStream is = new FileInputStream(checksum)) {
-            contents = new byte[(int) (checksum.length() - 42)];
+            contents = new byte[(int) (checksum.length() - lastLineLen)];
             //noinspection ResultOfMethodCallIgnored
             is.read(contents);
-            byte[] candidate = new byte[42];
+            byte[] candidate = new byte[lastLineLen];
             //noinspection ResultOfMethodCallIgnored
             is.read(candidate);
             String scandidate = new String(candidate);
@@ -243,7 +253,7 @@ public class Walker {
             } else {
                 String calc;
                 try (InputStream cis = new ByteArrayInputStream(contents)) {
-                    calc = MiscUtils.computeMD5Checksum(cis, null);
+                    calc = MiscUtils.computeChecksum(format, cis, null);
                 }
                 if (!scandidate.startsWith(calc))
                     throw new ChecksumVerificationFailedException(checksum.getAbsolutePath());
@@ -266,7 +276,7 @@ public class Walker {
                 Info i = fileList.addPath(p);
                 i.size = size;
                 totalSize.addAndGet(size);
-                if (cksum.length() == 32) {
+                if (cksum.length() == Mus.ALGO_LEN_BY_FORMAT[format]) {
                     i.state = FileList.State.NULL;
                     i.checksum = cksum;
                 } else {
@@ -275,6 +285,8 @@ public class Walker {
                 }
             }
         }
+
+        return format;
     }
 
     public Status getStatus() {

@@ -16,8 +16,9 @@
  */
 package eu.germanorizzo.proj.mus.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
+import eu.germanorizzo.proj.mus.Mus;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -45,7 +46,7 @@ public class MiscUtils {
         }
     }
 
-    private static String bytes2MD5(byte[] bytes) {
+    private static String bytes2armored(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append(HEX_CHARS[(b >> 4) & 15]);
@@ -88,10 +89,10 @@ public class MiscUtils {
         return String.format(FMT_FLOAT_FOR_SIZE, bytes / GB, "Gb");
     }
 
-    public static String computeMD5Checksum(InputStream is, IntConsumer onAdvancement)
+    public static String computeChecksum(int format, InputStream is, IntConsumer onAdvancement)
             throws IOException {
         try {
-            MessageDigest m = MessageDigest.getInstance("MD5");
+            MessageDigest m = MessageDigest.getInstance(Mus.ALGO_BY_FORMAT[format]);
 
             int read;
             byte[] buf = new byte[BUF_SIZE];
@@ -101,7 +102,7 @@ public class MiscUtils {
                     onAdvancement.accept(read);
             }
 
-            return MiscUtils.bytes2MD5(m.digest());
+            return MiscUtils.bytes2armored(m.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IOException(e);
         }
@@ -113,5 +114,16 @@ public class MiscUtils {
             if (_c == c)
                 count++;
         return count;
+    }
+
+    public static String getLastLineOfFile(File file) throws IOException {
+        String lastLine = null;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String currentLine;
+            while ((currentLine = reader.readLine()) != null) {
+                lastLine = currentLine;
+            }
+        }
+        return lastLine;
     }
 }

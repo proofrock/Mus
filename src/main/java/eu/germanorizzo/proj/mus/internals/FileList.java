@@ -119,14 +119,14 @@ public class FileList {
         byte[] toWrite = sb.toString().getBytes(MiscUtils.UTF8);
         String checksum;
         try (InputStream is = new ByteArrayInputStream(toWrite)) {
-            checksum = MiscUtils.computeMD5Checksum(is, null);
+            checksum = MiscUtils.computeChecksum(Mus.FORMAT, is, null);
         }
         os.write(toWrite);
         os.write(checksum.getBytes(MiscUtils.UTF8));
         os.write(LAST_LINE_SUFFIX.getBytes(MiscUtils.UTF8));
     }
 
-    public CheckStatus calcChecksum(int idx, IntConsumer onAdvancement) {
+    public CheckStatus calcChecksum(int format, int idx, IntConsumer onAdvancement) {
         Info i = list.get(idx);
 
         if (i.state == FileList.State.ERR)
@@ -152,7 +152,7 @@ public class FileList {
 
             String checksum;
             try (InputStream is = Files.newInputStream(i.path)) {
-                checksum = MiscUtils.computeMD5Checksum(is, onAdvancement);
+                checksum = MiscUtils.computeChecksum(format, is, onAdvancement);
             }
 
             if (!isVerification)

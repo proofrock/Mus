@@ -3,7 +3,7 @@ Calculates a checksum and verify it for a directory and its contents (GUI + CLI)
 
 # What is it?
 
-Mus is a little graphical (and CLI!) utility that takes a set of files, or a directory and all its content tree, and calculates a MD5 checksum of all the files. It allows to save the checksums in a ```.mu5``` file, and (later) load it and check that all the files are still OK.
+Mus is a little graphical (and CLI!) utility that takes a set of files, or a directory and all its content tree, and calculates a checksum of all the files. It allows to save the checksums in a ```.mu5``` file, and (later) load it and check that all the files are still OK.
 
 I wrote it for checking collections of file for modifications, accidental deletions and corruptions ("bit rot"). 
 

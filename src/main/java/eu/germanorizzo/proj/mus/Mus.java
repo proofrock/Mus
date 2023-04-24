@@ -32,8 +32,12 @@ import java.util.List;
 
 public class Mus {
     private static final String VERSION = "1.1.0";
+    public static final int FORMAT = 2;
     public static final String HEADER_STRING = "Mus " + VERSION;
     private static final int CLI_REFRESH_TIMEOUT = 500;
+
+    public static final String[] ALGO_BY_FORMAT = new String[]{"", "MD5", "SHA3-256"};
+    public static final int[] ALGO_LEN_BY_FORMAT = new int[]{-1, 32, 64};
 
     private static void doHeadless(String... args) {
         System.out.println(HEADER_STRING);
@@ -57,7 +61,7 @@ public class Mus {
             checksumFileName = new File(args[args.length - 1]);
         }
 
-        final Walker walker = Walker.forFiles(files);
+        final Walker walker = Walker.forFiles(FORMAT, files);
 
         walker.setOnBuilding(() -> System.out.print("Building file tree... "));
 

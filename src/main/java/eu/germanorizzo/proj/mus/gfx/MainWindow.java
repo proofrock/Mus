@@ -116,6 +116,7 @@ public class MainWindow extends JFrame {
         spnThreads.setToolTipText(
                 "How many threads to use (specify 1 if dealing with slow media i.e. CD-ROM)");
         spnThreads.setModel(new SpinnerNumberModel(DEFAULT_THREADS, 1, 12, 1));
+        spnThreads.setValue(Integer.valueOf(1));
 
         JLabel lblThreads = new JLabel("Threads:");
 
@@ -357,12 +358,12 @@ public class MainWindow extends JFrame {
         List<String> checksums = Walker.areThereChecksumFiles(files);
         final Walker walker;
         if (checksums.isEmpty())
-            walker = Walker.forFiles(files);
+            walker = Walker.forFiles(Mus.FORMAT, files);
         else if (GUIUtils.askConfirmation(this, "Mus checksum files have been detected\n"
                 + "Do you want to switch to Verification mode?"))
             walker = Walker.forChecksums(checksums);
         else
-            walker = Walker.forFiles(files);
+            walker = Walker.forFiles(Mus.FORMAT, files);
 
         fileList = walker.getFileList();
 
